@@ -1,0 +1,116 @@
+version: '3.7'
+
+services:
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.9
+    container_name: elasticsearch
+    ports:
+      - 9200:9200
+    environment:
+      - ELASTIC_USERNAME=elastic
+      - ELASTIC_PASSWORD=s3creT
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+      - ./configs/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.17.9
+    container_name: kibana
+    ports:
+      - 5601:5601
+    volumes:
+      - ./configs/kibana.yml:/usr/share/kibana/config/kibana.yml
+    depends_on:
+      - elasticsearch
+
+  apm-server:
+    image: docker.elastic.co/apm/apm-server:7.17.9
+    container_name: apm-server
+    ports:
+      - 8200:8200
+    command: >
+       apm-server -e --strict.perms=false 
+    volumes:
+      - ./configs/apm-server.yml:/usr/share/apm-server/apm-server.yml
+    depends_on:
+      - elasticsearch
+
+  # metricbeat:
+  #   image: docker.elastic.co/beats/metricbeat:7.17.9
+  #   container_name: metricbeat
+  #   # user: root
+  #   volumes:
+  #     - ./configs/metricbeat.yml:/usr/share/metricbeat/metricbeat.yml
+  #     # - /var/run/docker.sock:/var/run/docker.sock
+  #     # - /sys/fs/cgroup:/hostfs/sys/fs/cgroup:ro
+  #     # - /proc:/hostfs/proc:ro
+  #     - /:/hostfs:ro
+  #   command: >
+  #      metricbeat -e --strict.perms=false 
+  #   environment:
+  #     - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+  #   depends_on:
+  #     - elasticsearch
+  #     - go-api
+
+  heartbeat:
+    image: docker.elastic.co/beats/heartbeat:7.17.9
+    container_name: heartbeat
+    cap_add: ["NET_RAW"]
+    command: >
+       heartbeat -e --strict.perms=false 
+    volumes:
+      - ./configs/heartbeat.yml:/usr/share/heartbeat/heartbeat.yml
+    depends_on:
+      - elasticsearch
+
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:7.17.9
+    container_name: filebeat
+    volumes:
+      - ./configs/filebeat.yml:/usr/share/filebeat/filebeat.yml
+      - ./logs/:/logs/
+      # - /var/snap/docker/common/var-lib-docker/containers:/var/lib/docker/containers:ro
+      # - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      # - /var/run/docker.sock:/var/run/docker.sock:ro
+    command: >
+       filebeat -e --strict.perms=false 
+    depends_on:
+      - elasticsearch
+
+  elastalert:
+    image: jertel/elastalert2:2.18.0
+    container_name: elastalert
+    ports:
+      - 3030:3030
+    restart: always
+    volumes:
+      - ./configs/elastalert.yml:/opt/elastalert/config.yaml
+      - ./configs/elastalert-rules:/opt/elastalert/rules
+    depends_on:
+      - elasticsearch
+
+  logrotate-cron:
+    container_name: logrotate-cron
+    build:
+      context: .
+      dockerfile: Dockerfile-logrotate
+    volumes:
+      - ./logs/:/logs/
+
+  go-api:
+    container_name: go-api
+    ports:
+      - "9090:9090"
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - ELASTIC_APM_SERVER_URL=http://elastic:s3creT@apm-server:8200
+      - ELASTIC_APM_SECRET_TOKEN=s3creT-_Token
+      - ELASTIC_APM_SERVICE_NAME=go-api
+
+volumes:
+  esdata:
+    driver: local

@@ -1,0 +1,1 @@
+docker-compose up -d && docker logs -f go-api > logs/api.log

@@ -1,0 +1,13 @@
+apm-server:
+  host: "0.0.0.0:8200"
+  secret_token: "s3creT-_Token"
+
+output.elasticsearch:
+  hosts: ["elasticsearch:9200"]
+  username: "elastic"
+  password: "s3creT"
+
+setup.kibana:
+  host: "kibana:5601"
+  username: "elastic"
+  password: "s3creT"

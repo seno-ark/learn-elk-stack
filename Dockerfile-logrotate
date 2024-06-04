@@ -1,0 +1,11 @@
+FROM alpine:3.20.0
+
+RUN mkdir /etc/cron
+COPY ./configs/crontab /etc/cron/crontab
+COPY ./configs/logrotate.conf /etc/logrotate.conf
+
+RUN apk add logrotate
+
+RUN crontab /etc/cron/crontab
+
+CMD ["crond", "-f"]

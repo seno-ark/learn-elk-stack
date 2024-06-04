@@ -1,0 +1,26 @@
+rules_folder: /opt/elastalert/rules
+
+es_host: elasticsearch
+es_port: 9200
+es_username: elastic
+es_password: s3creT
+
+writeback_index: elastalert_status
+
+buffer_time: 
+  minutes: 15
+
+run_every:
+  minutes: 1
+
+alert_time_limit:
+  days: 2
+
+old_query_limit:
+  weeks: 1
+
+debug: true
+
+writeback_index_config:
+  number_of_shards: 1
+  number_of_replicas: 0

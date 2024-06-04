@@ -1,0 +1,15 @@
+heartbeat.monitors:
+- type: http
+  id: example-monitor
+  name: Go API Monitor
+  urls: ["http://go-api:9090"]
+  schedule: '@every 15s'
+  timeout: 25s
+
+setup.kibana:
+  host: "http://kibana:5601"
+
+output.elasticsearch:
+  hosts: ["http://elasticsearch:9200"]
+  username: "elastic" 
+  password: "s3creT" 

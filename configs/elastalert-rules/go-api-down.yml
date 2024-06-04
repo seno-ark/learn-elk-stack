@@ -1,0 +1,24 @@
+name: Go API Down Alert
+type: any
+
+index: heartbeat-*
+
+filter:
+- term:
+    monitor.status: "down"
+- term:
+    monitor.name: "Go API Monitor"
+- term:
+    http.response.status_code: 500
+- term:
+    http.response.headers.Content-Length: 0
+
+alert:
+- "telegram"
+
+alert_text: "🚑 Go API is Down - {0} {1} {2}={3}"
+alert_text_args: ["@timestamp", "url.full", "http.response.status_code", "http.response.body.content"]
+alert_text_type: alert_text_only
+
+telegram_bot_token: 0123456789:ABCDEF-GHIJKL
+telegram_room_id: "-1234567890"
