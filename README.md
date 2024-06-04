@@ -4,4 +4,4 @@
 
 ./start.sh
 
-Open http://localhost:9200
+Open [http://localhost:5601](http://localhost:5601/)
